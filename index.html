@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python: Lambda Functions - Alphagen Learning</title>
+  
+  <!-- Google Fonts: Poppins & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome & Canvas Confetti CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          },
+          colors: {
+            alphagen: {
+              purple: '#5E48C4',      // Primary Brand Purple
+              purpleDark: '#4A3AAD',  // Dark Purple hover
+              purpleMid: '#7B6ED4',   // Fills & Borders
+              purplePale: '#EAE7FE',  // Light highlight boxes
+              purpleGhost: '#F5F4FF', // Card ghost background
+              yellow: '#FFD071',      // Spark Yellow accent
+              yellowDark: '#E6B84A',  // Yellow text on light surfaces
+              yellowPale: '#FFF3CC',  // Highlight background
+              nearBlack: '#1A1A1A',   // Primary text
+              darkGrey: '#404048',    // Secondary text
+              midGrey: '#888896',     // Captions
+              lightGrey: '#F2F2F4',   // Neutral card background
+              cyan: '#59E4FB',        // Tech accent light
+              cyanDark: '#055F6E',    // Tech accent dark
+              cyanPale: '#E0FAFE',    // Tech pale background
+              coral: '#ED5661',       // Warning / bug accent
+              coralDark: '#993040',   // Warning dark text
+              coralPale: '#FFF0F1'    // Warning pale background
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      margin: 0;
+      padding: 12px;
+      background-color: #0f081d;
+      font-family: 'Poppins', sans-serif;
+      color: #1A1A1A;
+      overflow-x: hidden;
+      user-select: none;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .stage-wrapper {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Fixed 1280x720 Presentation Stage */
+    .slide-stage {
+      width: 1280px;
+      height: 720px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      background-color: #ffffff;
+      border-radius: 28px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+      border: 1px solid #EAE7FE;
+      transform-origin: top center;
+    }
+
+    .slide-panel {
+      width: 1280px;
+      height: 720px;
+      padding: 68px 46px 20px 46px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      background: #ffffff;
+    }
+
+    .slide-panel.active {
+      display: flex;
+      animation: slideInSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideInSmooth {
+      from { opacity: 0; transform: scale(0.985) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .btn-interactive {
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-interactive:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 10px 20px -5px rgba(94, 72, 196, 0.3);
+    }
+    .btn-interactive:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .nav-bar {
+      width: 1280px;
+      margin: 12px auto 6px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      transform-origin: top center;
+    }
+
+    .nav-btn {
+      background: #2A1C68;
+      color: #FFD071;
+      border: 2px solid #5E48C4;
+      padding: 10px 24px;
+      border-radius: 14px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #5E48C4;
+      color: #ffffff;
+      transform: scale(1.04);
+    }
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .nav-btn.finish-btn {
+      background: #FFD071;
+      color: #1A1A1A;
+      border-color: #FFD071;
+      animation: pulseFinish 1.6s infinite alternate;
+    }
+
+    @keyframes pulseFinish {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 208, 113, 0.6); }
+      100% { transform: scale(1.05); box-shadow: 0 0 16px 4px rgba(255, 208, 113, 0.4); }
+    }
+
+    .dot-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2A1C68;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dot-indicator.active {
+      background: #FFD071;
+      width: 24px;
+      border-radius: 10px;
+    }
+
+    .spark-wavy-underline {
+      position: relative;
+      display: inline-block;
+      color: #5E48C4;
+    }
+    .spark-wavy-underline::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 4' preserveAspectRatio='none'%3E%3Cpath d='M0 2 Q 5 0, 10 2 T 20 2' fill='none' stroke='%23FFD071' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: 20px 12px;
+    }
+
+    .quiz-option {
+      background: #ffffff;
+      border: 2px solid #EAE7FE;
+      border-radius: 18px;
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1A1A1A;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+    }
+    .quiz-option:hover {
+      border-color: #5E48C4;
+      background: #F5F4FF;
+      transform: translateX(4px);
+    }
+    .quiz-option.selected-correct {
+      background: #f0fdf4 !important;
+      border-color: #22c55e !important;
+      color: #14532d !important;
+    }
+    .quiz-option.selected-wrong {
+      background: #FFF0F1 !important;
+      border-color: #ED5661 !important;
+      color: #993040 !important;
+    }
+
+    .syntax-part-btn {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+    .syntax-part-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(94, 72, 196, 0.25);
+    }
+    .syntax-part-btn.active-token {
+      border-color: #FFD071;
+      background: rgba(255, 208, 113, 0.15);
+    }
+  </style>
+</head>
+
+<body>
+<div class="stage-wrapper">
+
+  <!-- TOP ALPHAGEN BRANDING BANNER BAR -->
+  <header class="w-full bg-alphagen-purpleDark px-4 py-3.5 flex flex-wrap items-center justify-between gap-3 text-white shadow-md rounded-2xl mb-3 border border-alphagen-purpleMid">
+    <div class="flex items-center gap-3">
+      <a href="#" class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack px-4 py-2 rounded-xl font-extrabold text-xs md:text-sm shadow-sm transition-all flex items-center gap-2">
+        <span class="tracking-wide">ALPHAGEN LEARNING</span>
+      </a>
+      <span class="font-extrabold text-base md:text-xl tracking-tight text-white">
+        Python: Lambda Functions (Anonymous &amp; Inline Functions)
+      </span>
+    </div>
+
+    <!-- Right Controls with Sound Toggle -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleAudio()" id="top-audio-btn" class="bg-alphagen-purple hover:bg-alphagen-purpleMid text-white p-2 rounded-lg transition-all" title="Toggle Sound">
+        <i class="fa-solid fa-volume-high text-base" id="sound-icon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 1280x720 FIXED PRESENTATION STAGE -->
+  <div class="slide-stage">
+
+    <!-- Header Navigation Bar inside Stage -->
+    <header class="w-full bg-white border-b border-alphagen-purplePale px-6 py-2.5 flex items-center justify-between relative z-50">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-alphagen-purple flex items-center justify-center text-white text-xl shadow-md shadow-alphagen-purple/20">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-base text-alphagen-purple tracking-tight">Python Fundamentals — Lambda Functions</h1>
+          <p class="text-xs font-semibold text-alphagen-yellowDark">Quick One-Line Anonymous Functions</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2" id="header-dots-container"></div>
+
+      <div class="flex items-center gap-3">
+        <span id="slide-counter-pill" class="text-xs font-bold text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-full border border-alphagen-purplePale">
+          Slide 1 / 11
+        </span>
+
+        <select id="slide-dropdown" onchange="goToSlide(parseInt(this.value))" class="text-xs font-bold text-alphagen-nearBlack bg-alphagen-lightGrey hover:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-xl cursor-pointer focus:outline-none focus:border-alphagen-purple transition">
+          <option value="1">1. Welcome Screen</option>
+          <option value="2">2. Warm Up: Functions Recap</option>
+          <option value="3">3. Real-Life Analogy: The Disposable Cup</option>
+          <option value="4">4. What is a Lambda Function?</option>
+          <option value="5">5. Why Do We Use Lambda Functions?</option>
+          <option value="6">6. Syntax &amp; Name Simulator</option>
+          <option value="7">7. Adding Numbers with Lambda</option>
+          <option value="8">8. Coding Challenge 1 (Tasks)</option>
+          <option value="9">9. Conditions &amp; Loops in Lambda</option>
+          <option value="10">10. Coding Challenge 2 (Tasks)</option>
+          <option value="11">11. Wrap-Up Quiz &amp; Celebrate</option>
+        </select>
+
+        <button onclick="toggleAudio()" id="audio-btn" class="w-9 h-9 rounded-xl bg-alphagen-purpleGhost hover:bg-alphagen-purplePale text-alphagen-purple border border-alphagen-purplePale flex items-center justify-center text-sm transition btn-interactive" title="Toggle Sound">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================= SLIDE 1: WELCOME SCREEN ================= -->
+    <div id="slide-1" class="slide-panel active justify-center items-center text-center">
+      <div class="inline-flex items-center gap-2 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale text-alphagen-purple text-sm font-extrabold px-6 py-2 rounded-full mb-8 tracking-wider uppercase">
+        <i class="fa-brands fa-python text-alphagen-yellowDark"></i> PYTHON 1 MODULE
+      </div>
+
+      <h1 class="text-6xl md:text-7xl font-extrabold text-alphagen-nearBlack mb-12 tracking-tight leading-tight">
+        Python: <span class="spark-wavy-underline">Lambda Functions</span>
+      </h1>
+
+      <button onclick="nextSlide(); playSound('pop')" class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack font-extrabold text-xl px-12 py-5 rounded-2xl shadow-xl btn-interactive flex items-center gap-3">
+        <span>Start Exploring</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <!-- ================= SLIDE 2: QUICK WARM-UP (FUNCTIONS RECAP) ================= -->
+    <div id="slide-2" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Foundations Recap</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Let's Test Your Functions Knowledge!</h2>
+      </div>
+
+      <div class="grid grid-cols-3 gap-5 my-auto items-stretch">
+        <!-- Q1: What is a function? (Option B is Correct) -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <span class="bg-alphagen-purple text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-3 inline-block">1. Core Concept</span>
+            <h3 class="font-extrabold text-sm text-alphagen-nearBlack mb-3">What is a Function in Python?</h3>
+            <div class="space-y-2">
+              <button onclick="checkWarmup(this, false)" class="quiz-option w-full text-xs">
+                <span>A special variable that only holds numbers</span>
+              </button>
+              <button onclick="checkWarmup(this, true)" class="quiz-option w-full text-xs">
+                <span>Reusable block of code that performs a specific task</span>
+              </button>
+            </div>
+          </div>
+          <div class="warmup-fb hidden p-2.5 rounded-xl text-xs font-bold text-center mt-3"></div>
+        </div>
+
+        <!-- Q2: Types of Functions (Option A is Correct) -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <span class="bg-alphagen-yellowDark text-alphagen-nearBlack text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-3 inline-block">2. Function Types</span>
+            <h3 class="font-extrabold text-sm text-alphagen-nearBlack mb-3">What are the different types of functions?</h3>
+            <div class="space-y-2">
+              <button onclick="checkWarmup(this, true)" class="quiz-option w-full text-xs">
+                <span> Default Argument &amp; Return Functions</span>
+              </button>
+              <button onclick="checkWarmup(this, false)" class="quiz-option w-full text-xs">
+                <span>Only print statements with no variables</span>
+              </button>
+            </div>
+          </div>
+          <div class="warmup-fb hidden p-2.5 rounded-xl text-xs font-bold text-center mt-3"></div>
+        </div>
+
+        <!-- Q3: Parameter vs Argument (Option B is Correct) -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <span class="bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-3 inline-block">3. Parameter vs Argument</span>
+            <h3 class="font-extrabold text-sm text-alphagen-nearBlack mb-3">What is the difference?</h3>
+            <div class="space-y-2">
+              <button onclick="checkWarmup(this, false)" class="quiz-option w-full text-xs">
+                <span>They mean the exact same thing in every programming language</span>
+              </button>
+              <button onclick="checkWarmup(this, true)" class="quiz-option w-full text-xs">
+                <span>Parameter = variable in def;<br>Argument = real value passed in call!</span>
+              </button>
+            </div>
+          </div>
+          <div class="warmup-fb hidden p-2.5 rounded-xl text-xs font-bold text-center mt-3"></div>
+        </div>
+      </div>
+
+     
+    </div>
+
+    <!-- ================= SLIDE 3: REAL-LIFE ANALOGY (THE DISPOSABLE CUP) ================= -->
+    <div id="slide-3" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Real-Life Analogy</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">When You are thirsty</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">You are traveling and very thirsty. You don't have a water bottle, but you spot two options on a table:</p>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 my-auto items-stretch">
+        <!-- Interactive Choices (7 cols) -->
+        <div class="col-span-7 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale rounded-3xl p-6 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-extrabold text-alphagen-purple uppercase tracking-wider block mb-3">Step 1: Which item will you pick to drink water?</span>
+
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Option A: Disposable Paper -->
+              <div onclick="pickDrinkingItem('paper')" id="item-paper" class="bg-white border-2 border-alphagen-purplePale hover:border-alphagen-coral rounded-2xl p-5 text-center cursor-pointer btn-interactive">
+                <div class="text-5xl mb-2">📄</div>
+                <h4 class="font-extrabold text-sm text-alphagen-nearBlack">Disposable Paper Sheet</h4>
+                <p class="text-xs text-alphagen-darkGrey mt-1">Flat sheet of paper</p>
+              </div>
+
+              <!-- Option B: Disposable Cup -->
+              <div onclick="pickDrinkingItem('cup')" id="item-cup" class="bg-white border-2 border-alphagen-purplePale hover:border-alphagen-purple rounded-2xl p-5 text-center cursor-pointer btn-interactive">
+                <div class="text-5xl mb-2">🥤</div>
+                <h4 class="font-extrabold text-sm text-alphagen-nearBlack">Disposable Cup</h4>
+                <p class="text-xs text-alphagen-darkGrey mt-1">Quick paper cup ready for water</p>
+              </div>
+            </div>
+
+            <!-- Follow-up Question after picking cup -->
+            <div id="followup-step" class="hidden mt-5 p-4 bg-white rounded-2xl border-2 border-alphagen-yellowDark">
+              <span class="text-xs font-extrabold text-alphagen-nearBlack uppercase block mb-2">
+                Step 2: You drank the water! Now what do you do with the cup?
+              </span>
+              <div class="flex gap-3">
+                <button onclick="handleCupDecision('keep')" class="quiz-option flex-1 justify-center text-xs">
+                  Keep it forever in your backpack 🎒
+                </button>
+                <button onclick="handleCupDecision('throw')" class="quiz-option flex-1 justify-center text-xs">
+                  Throw it away into the bin 🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="analogy-feedback" class="p-3 bg-white border border-alphagen-purplePale rounded-xl text-xs font-bold text-alphagen-purple text-center mt-3">
+            Click on the item you would pick to drink water!
+          </div>
+        </div>
+
+        <!-- Analogy Connection Card (5 cols) with bullet points -->
+        <div class="col-span-5 bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between shadow-xl">
+          <div>
+            <div class="border-b border-slate-800 pb-2 mb-3 text-xs font-mono text-alphagen-yellow font-bold uppercase flex justify-between">
+              <span>HOW LAMBDA RELATES</span>
+              <span class="text-emerald-400">ONE-TIME USE</span>
+            </div>
+
+            <div class="space-y-3 text-xs leading-relaxed text-slate-300">
+              <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                <strong class="text-amber-300 block mb-1">🥤 Regular Function (def):</strong>
+                <ul class="list-disc list-inside space-y-1 text-slate-300">
+                  <li>Like a reusable steel flask you carry everywhere.</li>
+                  <li>You give it a name and keep it in your program forever.</li>
+                </ul>
+              </div>
+
+              <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                <strong class="text-alphagen-cyan block mb-1">⚡ Lambda Function:</strong>
+                <ul class="list-disc list-inside space-y-1 text-slate-300">
+                  <li>Like a disposable paper cup!</li>
+                  <li>Created on the spot for one quick task.</li>
+                  <li>Used right away and discarded!</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono text-center text-alphagen-yellow">
+            ✨ No name needed • Single-line • Quick throwaway!
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-alphagen-purpleGhost border border-alphagen-purplePale p-2.5 rounded-xl text-xs font-bold text-alphagen-purple text-center">
+        A <strong>Lambda Function</strong> is a quick throwaway function: used once for a small job and thrown away!
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 4: THE 3 CHARACTERISTICS OF A LAMBDA FUNCTION ================= -->
+    <div id="slide-4" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Core Concept</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">What is a Lambda Function?</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">Here are the 3 key features that make lambda functions special and easy to use:</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-6 my-auto items-stretch">
+        <!-- Characteristic 1 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-6 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-alphagen-purple text-2xl font-extrabold flex items-center justify-center mb-4">
+              👻
+            </div>
+            <span class="bg-alphagen-purple text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-2 inline-block">1. Anonymous</span>
+            <h3 class="font-extrabold text-base text-alphagen-nearBlack mb-2">It Has No Name</h3>
+            <ul class="space-y-2 text-xs text-alphagen-darkGrey font-medium leading-relaxed">
+              <li class="flex items-start gap-1.5">
+                <span class="text-purple-600 font-bold">•</span>
+                <span>You do not use the <code class="font-mono text-purple-700 font-bold">def</code> keyword.</span>
+              </li>
+              
+            </ul>
+          </div>
+          <div class="bg-white p-2.5 rounded-xl border border-alphagen-purplePale text-xs font-bold text-alphagen-purple text-center mt-4">
+            No <code>def</code> required!
+          </div>
+        </div>
+
+        <!-- Characteristic 2 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-6 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 text-2xl font-extrabold flex items-center justify-center mb-4">
+              📏
+            </div>
+            <span class="bg-amber-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-2 inline-block">2. Compact</span>
+            <h3 class="font-extrabold text-base text-alphagen-nearBlack mb-2">Written in One Line</h3>
+            <ul class="space-y-2 text-xs text-alphagen-darkGrey font-medium leading-relaxed">
+              <li class="flex items-start gap-1.5">
+                <span class="text-amber-600 font-bold">•</span>
+                <span>The entire function fits on a single line.</span>
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-amber-600 font-bold">•</span>
+                <span>It automatically calculates and returns the answer without writing <code class="font-mono text-amber-700 font-bold">return</code>!</span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white p-2.5 rounded-xl border border-alphagen-purplePale text-xs font-bold text-amber-700 text-center mt-4">
+            Auto-returns the value!
+          </div>
+        </div>
+
+        <!-- Characteristic 3 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-6 rounded-3xl flex flex-col justify-between shadow-xs">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 text-2xl font-extrabold flex items-center justify-center mb-4">
+              🗑️
+            </div>
+            <span class="bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-2 inline-block">3. Throwaway</span>
+            <h3 class="font-extrabold text-base text-alphagen-nearBlack mb-2">Used Once &amp; Discarded</h3>
+            <ul class="space-y-2 text-xs text-alphagen-darkGrey font-medium leading-relaxed">
+              <li class="flex items-start gap-1.5">
+                <span class="text-emerald-600 font-bold">•</span>
+                <span>Perfect for quick one-time tasks.</span>
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-emerald-600 font-bold">•</span>
+                <span>Doesn't clutter your code with unused function names.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white p-2.5 rounded-xl border border-alphagen-purplePale text-xs font-bold text-emerald-700 text-center mt-4">
+            Zero code clutter!
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <!-- ================= SLIDE 5: WHY DO WE USE LAMBDA FUNCTIONS? ================= -->
+    <div id="slide-5" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Purpose &amp; Benefits</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Why Do We Use Lambda Functions?</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">Why do programmers love using lambdas instead of writing standard functions?</p>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 my-auto items-stretch">
+        <!-- 3 Friendly Bullet Points (7 cols) -->
+        <div class="col-span-7 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale rounded-3xl p-6 flex flex-col justify-between">
+          <div class="space-y-3.5">
+            <div class="bg-white p-4 rounded-2xl border border-alphagen-purplePale flex items-start gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-purple-100 text-alphagen-purple flex items-center justify-center font-extrabold text-lg shrink-0">
+                ⚡
+              </div>
+              <div>
+                <h4 class="font-extrabold text-sm text-alphagen-nearBlack">1. Super Quick to Write</h4>
+                <ul class="text-xs text-alphagen-darkGrey font-medium mt-1 space-y-0.5">
+                  <li>• Cuts down 3 to 4 lines of code into a single simple line.</li>
+                 
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-alphagen-purplePale flex items-start gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-extrabold text-lg shrink-0">
+                🧹
+              </div>
+              <div>
+                <h4 class="font-extrabold text-sm text-alphagen-nearBlack">2. Keeps Your Code Clean</h4>
+                <ul class="text-xs text-alphagen-darkGrey font-medium mt-1 space-y-0.5">
+                  <li>• Keeps your programs neat, modular, and organized.</li>
+                  <li>• No need to think of unique names for functions you will only call once!</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-alphagen-purplePale flex items-start gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold text-lg shrink-0">
+                🧩
+              </div>
+              <div>
+                <h4 class="font-extrabold text-sm text-alphagen-nearBlack">3. Fits Right Inside Other Commands</h4>
+                <ul class="text-xs text-alphagen-darkGrey font-medium mt-1 space-y-0.5">
+                  <li>• Can be passed directly inside lists, loops, and conditions.</li>
+                 
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Visual Card (5 cols) -->
+        <div class="col-span-5 bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between shadow-xl font-mono text-xs">
+          <div>
+            <div class="border-b border-slate-800 pb-2 mb-3 text-alphagen-yellow font-bold uppercase flex justify-between">
+              <span>QUICK COMPARISON</span>
+              <span class="text-alphagen-cyan">CLEANER CODE</span>
+            </div>
+
+            <!-- Standard def -->
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 mb-3">
+              <span class="text-slate-400 block mb-1">❌ Regular 3-Line def Function:</span>
+              <div class="text-slate-300">
+                <span class="text-purple-400">def</span> double_it(x):<br>
+                &nbsp;&nbsp;<span class="text-purple-400">return</span> x * 2
+              </div>
+            </div>
+
+            <!-- Lambda 1-line -->
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-emerald-400 block mb-1">✅ Neat 1-Line Lambda:</span>
+              <div class="text-emerald-300">
+                double_it = <span class="text-purple-400">lambda</span> x: x * 2
+              </div>
+            </div>
+          </div>
+
+         
+        </div>
+      </div>
+
+      <div class="bg-alphagen-purpleGhost border border-alphagen-purplePale p-2.5 rounded-xl text-xs font-bold text-alphagen-purple text-center">
+        Use lambda when you need a fast, simple operation without creating lots of extra helper functions!
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 6: SYNTAX: PRINTING A NAME (SIMULATOR) ================= -->
+    <div id="slide-6" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Syntax Breakdown</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Syntax of Lambda: Printing a Greeting</h2>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 my-auto items-stretch">
+        <!-- Syntax & Inputs on Left (5 cols) -->
+        <div class="col-span-5 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale rounded-3xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="font-extrabold text-sm text-alphagen-nearBlack mb-3">1. Test with Custom Name Input:</h3>
+            
+            <div class="mb-4">
+              <label class="text-xs font-bold text-alphagen-darkGrey uppercase block mb-1">Type Any Name:</label>
+              <input type="text" id="sim-name-input" value="Rohan" oninput="updateNameSim()" class="w-full p-3.5 rounded-2xl border-2 border-alphagen-purplePale font-mono text-sm font-bold text-alphagen-nearBlack outline-none focus:border-alphagen-purple bg-white">
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="text-xs font-bold text-alphagen-midGrey w-full">Quick Picks:</span>
+              <button onclick="setNamePreset('John')" class="px-3 py-1.5 rounded-xl bg-white border border-alphagen-purplePale text-xs font-bold btn-interactive">John</button>
+              <button onclick="setNamePreset('Mary')" class="px-3 py-1.5 rounded-xl bg-white border border-alphagen-purplePale text-xs font-bold btn-interactive">Mary</button>
+              <button onclick="setNamePreset('Alex')" class="px-3 py-1.5 rounded-xl bg-white border border-alphagen-purplePale text-xs font-bold btn-interactive">Alex</button>
+            </div>
+          </div>
+
+          <div class="bg-white border-2 border-alphagen-purplePale p-4 rounded-2xl text-xs space-y-1 font-semibold text-alphagen-darkGrey">
+            <strong class="text-alphagen-purple block">The Lambda Blueprint:</strong>
+            <div><span class="text-purple-600 font-bold">lambda</span> : keyword to declare</div>
+            <div><span class="text-amber-600 font-bold">name</span> : parameter received</div>
+            <div><span class="text-emerald-600 font-bold">: "Hello, " + name</span> : expression returned</div>
+          </div>
+        </div>
+
+        <!-- Live Code & Terminal Output on Right (7 cols) -->
+        <div class="col-span-7 bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between font-mono shadow-xl">
+          <div>
+            <div class="border-b border-slate-800 pb-2 mb-3 text-xs text-alphagen-yellow font-bold flex justify-between">
+              <span>PYTHON CODE SIMULATOR</span>
+              <span class="text-alphagen-cyan">LIVE SYNC</span>
+            </div>
+
+            <!-- Python Code Box -->
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 text-xs leading-relaxed space-y-2 mb-4">
+              <div class="text-slate-500"># 1. Define one-line lambda function</div>
+              <div>
+                greet = <span class="text-purple-400 font-bold">lambda</span> <span class="text-emerald-400 font-bold">name</span> : <span class="text-yellow-300">"Hello, "</span> + <span class="text-emerald-400 font-bold">name</span>
+              </div>
+              <div class="text-slate-500 pt-2"># 2. Call the lambda using the variable name</div>
+              <div>
+                print(greet(<span id="code-name-arg" class="text-yellow-300 font-bold">"Rohan"</span>))
+              </div>
+            </div>
+          </div>
+
+          <!-- Terminal Screen -->
+          <div class="bg-black p-4 rounded-2xl border border-slate-800">
+            <div class="text-[11px] text-slate-500 font-mono mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-terminal text-emerald-400"></i>
+              <span>TERMINAL OUTPUT:</span>
+            </div>
+            <div id="sim-name-terminal" class="text-xl text-emerald-400 font-extrabold tracking-wide">
+              Hello, Rohan
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+    </div>
+
+    <!-- ================= SLIDE 7: LAMBDA FUNCTION TO ADD TWO NUMBERS ================= -->
+    <div id="slide-7" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Math Operations</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Add Two Numbers Using Lambda</h2>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 my-auto items-stretch">
+        <!-- Left: Interactive Syntax Inspector (5 cols) -->
+        <div class="col-span-5 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale rounded-3xl p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="font-extrabold text-xs text-alphagen-purple uppercase tracking-wider mb-2">
+              Click Syntax Tokens to Inspect Role:
+            </h3>
+
+            <!-- Clickable Tokens -->
+            <div class="bg-white p-3.5 rounded-2xl border border-alphagen-purplePale font-mono text-sm font-bold flex flex-wrap gap-1.5 items-center mb-3">
+              <button onclick="inspectAddToken('var')" id="tok-var" class="syntax-part-btn text-purple-700">add</button>
+              <span>=</span>
+              <button onclick="inspectAddToken('kw')" id="tok-kw" class="syntax-part-btn text-purple-500">lambda</button>
+              <button onclick="inspectAddToken('params')" id="tok-params" class="syntax-part-btn text-emerald-600">a, b</button>
+              <span>:</span>
+              <button onclick="inspectAddToken('expr')" id="tok-expr" class="syntax-part-btn text-amber-600">a + b</button>
+            </div>
+
+            <div id="token-desc-box" class="bg-white p-3 rounded-xl border border-alphagen-purplePale text-xs text-alphagen-darkGrey font-medium leading-relaxed">
+              Click on any piece of code above to learn what each part does!
+            </div>
+          </div>
+
+          <!-- Number Adjusters -->
+          <div class="space-y-2 mt-3 pt-3 border-t border-alphagen-purplePale">
+            <span class="text-xs font-bold text-alphagen-nearBlack block">Adjust Input Numbers:</span>
+            <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-alphagen-purplePale">
+              <span class="text-xs font-mono font-bold text-alphagen-purple">num1 (a):</span>
+              <div class="flex items-center gap-2">
+                <button onclick="adjustAddNum(1, -1)" class="w-7 h-7 rounded-lg bg-alphagen-purpleGhost font-bold text-xs btn-interactive">-</button>
+                <span id="add-val-1" class="text-sm font-mono font-bold w-6 text-center">8</span>
+                <button onclick="adjustAddNum(1, 1)" class="w-7 h-7 rounded-lg bg-alphagen-purpleGhost font-bold text-xs btn-interactive">+</button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-alphagen-purplePale">
+              <span class="text-xs font-mono font-bold text-alphagen-purple">num2 (b):</span>
+              <div class="flex items-center gap-2">
+                <button onclick="adjustAddNum(2, -1)" class="w-7 h-7 rounded-lg bg-alphagen-purpleGhost font-bold text-xs btn-interactive">-</button>
+                <span id="add-val-2" class="text-sm font-mono font-bold w-6 text-center">12</span>
+                <button onclick="adjustAddNum(2, 1)" class="w-7 h-7 rounded-lg bg-alphagen-purpleGhost font-bold text-xs btn-interactive">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Code & Execution (7 cols) -->
+        <div class="col-span-7 bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between font-mono shadow-xl">
+          <div>
+            <div class="border-b border-slate-800 pb-2 mb-3 text-xs text-alphagen-yellow font-bold flex justify-between">
+              <span>LIVE PYTHON CODE</span>
+              <span>SYNCHRONOUS TERMINAL</span>
+            </div>
+
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 text-xs leading-relaxed space-y-2 mb-4">
+              <div class="text-slate-500"># Lambda declaration with two parameters</div>
+              <div>
+                add = <span class="text-purple-400 font-bold">lambda</span> <span class="text-emerald-400 font-bold">a, b</span> : <span class="text-amber-300 font-bold">a + b</span>
+              </div>
+              <div class="text-slate-500 pt-2"># Invoking the lambda with two arguments</div>
+              <div>
+                result = add(<span id="code-add-a" class="text-emerald-400 font-bold">8</span>, <span id="code-add-b" class="text-emerald-400 font-bold">12</span>)
+              </div>
+              <div>
+                print(<span class="text-yellow-300">"Calculated Sum:"</span>, result)
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-black p-4 rounded-2xl border border-slate-800">
+            <span class="text-[11px] text-slate-500 block mb-1">TERMINAL RESULT:</span>
+            <div id="add-terminal-out" class="text-2xl text-alphagen-yellow font-extrabold">
+              Calculated Sum: 20
+            </div>
+          </div>
+        </div>
+      </div>
+
+     
+    </div>
+
+    <!-- ================= SLIDE 8: CODING CHALLENGE 1 (TASKS CHECKLIST) ================= -->
+    <div id="slide-8" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Lab Practice 1</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Coding Challenge I</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">Write each lambda program in your Python IDE and check each task off:</p>
+      </div>
+
+      <div class="max-w-3xl mx-auto w-full my-auto space-y-4">
+        <!-- Task 1 Card -->
+        <label class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-alphagen-purple transition">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="cc1-check w-6 h-6 accent-purple-600 cursor-pointer" onchange="updateCC1()">
+            <div>
+              <span class="bg-alphagen-purple text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-1 inline-block">Task 1</span>
+              <h3 class="font-extrabold text-base text-alphagen-nearBlack">Print Your Name and Your Favorite Teacher's Name</h3>
+              <p class="text-xs text-alphagen-darkGrey mt-0.5">Write a lambda function that takes your name and your teacher's name and prints them!</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-user-graduate text-alphagen-purple text-2xl pr-2"></i>
+        </label>
+
+        <!-- Task 2 Card -->
+        <label class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-alphagen-purple transition">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="cc1-check w-6 h-6 accent-purple-600 cursor-pointer" onchange="updateCC1()">
+            <div>
+              <span class="bg-alphagen-yellowDark text-alphagen-nearBlack text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-1 inline-block">Task 2</span>
+              <h3 class="font-extrabold text-base text-alphagen-nearBlack">Multiply Three Numbers</h3>
+              <p class="text-xs text-alphagen-darkGrey mt-0.5">Write a lambda function that takes 3 arguments and returns their multiplication product.</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-calculator text-alphagen-yellowDark text-2xl pr-2"></i>
+        </label>
+
+        <!-- Progress Status Banner -->
+        <div id="cc1-msg" class="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-center text-xs font-mono text-alphagen-yellow flex items-center justify-between">
+          <span>PROGRESS CHECKLIST:</span>
+          <span id="cc1-pill" class="text-alphagen-cyan font-bold">0 / 2 Tasks Completed</span>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <!-- ================= SLIDE 9: CONDITIONS & LOOPS WITH LAMBDA ================= -->
+    <div id="slide-9" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Advanced Techniques</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Conditions &amp; Loops in Lambda</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">Can lambda make decisions and process loops? YES, using ternary operators and comprehensions!</p>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 my-auto items-stretch">
+        <!-- Interactive Condition Checker (6 cols) -->
+        <div class="col-span-6 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale rounded-3xl p-6 flex flex-col justify-between">
+          <div>
+            <span class="bg-alphagen-purple text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-2 inline-block">1. IF / ELSE IN LAMBDA</span>
+            <h3 class="font-extrabold text-sm text-alphagen-nearBlack mb-2">Check Greater vs. Lesser:</h3>
+            
+            <div class="bg-white p-3 rounded-xl border border-alphagen-purplePale font-mono text-xs mb-3 text-slate-800">
+              check = <span class="text-purple-600 font-bold">lambda</span> a, b: <span class="text-emerald-600 font-bold">"a is Greater"</span> <span class="text-purple-600 font-bold">if</span> a &gt; b <span class="text-purple-600 font-bold">else</span> <span class="text-amber-600 font-bold">"b is Greater"</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="bg-white p-2.5 rounded-xl border border-alphagen-purplePale">
+                <span class="text-xs font-bold font-mono text-alphagen-purple block mb-1">Value of a:</span>
+                <input type="number" id="cond-val-a" value="15" onchange="runCondDemo()" class="w-full font-mono text-xs font-bold p-1.5 border rounded-lg">
+              </div>
+              <div class="bg-white p-2.5 rounded-xl border border-alphagen-purplePale">
+                <span class="text-xs font-bold font-mono text-alphagen-purple block mb-1">Value of b:</span>
+                <input type="number" id="cond-val-b" value="8" onchange="runCondDemo()" class="w-full font-mono text-xs font-bold p-1.5 border rounded-lg">
+              </div>
+            </div>
+          </div>
+
+          <div id="cond-result-pill" class="p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold text-center">
+            Result: a is Greater! (15 &gt; 8)
+          </div>
+        </div>
+
+        <!-- Loop with Lambda (6 cols) -->
+        <div class="col-span-6 bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between shadow-xl">
+          <div>
+            <span class="bg-alphagen-yellow text-alphagen-nearBlack text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-2 inline-block">2. LOOPS WITH LAMBDA</span>
+            <h3 class="font-extrabold text-sm text-white mb-2 font-mono">Loop Multiplier (1 to 10):</h3>
+
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 font-mono text-xs leading-relaxed space-y-1 mb-3">
+              <div class="text-slate-500"># Lambda that generates sequence 1 to 10</div>
+              <div>
+                run_loop = <span class="text-purple-400 font-bold">lambda</span> n: [n * i <span class="text-purple-400 font-bold">for</span> i <span class="text-purple-400 font-bold">in</span> range(1, 11)]
+              </div>
+              <div class="text-slate-500 pt-1"># Test for multiples of 5</div>
+              <div>
+                print(run_loop(<span class="text-yellow-300 font-bold">5</span>))
+              </div>
+            </div>
+
+            <div class="bg-black p-3.5 rounded-xl border border-slate-800 text-xs font-mono text-alphagen-yellow overflow-x-auto">
+              Multiples of 5: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+            </div>
+          </div>
+
+          <div class="text-[11px] font-mono text-slate-400 text-center">
+            Ternary: <code>value_if_true IF condition ELSE value_if_false</code>
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <!-- ================= SLIDE 10: CODING CHALLENGE 2 (TASKS CHECKLIST) ================= -->
+    <div id="slide-10" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Lab Practice 2</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Coding Challenge II</h2>
+        <p class="text-sm text-alphagen-darkGrey font-medium mt-1">Implement these two programs in your Python editor and check off each task:</p>
+      </div>
+
+      <div class="max-w-3xl mx-auto w-full my-auto space-y-4">
+        <!-- Task 1 Card -->
+        <label class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-alphagen-purple transition">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="cc2-check w-6 h-6 accent-purple-600 cursor-pointer" onchange="updateCC2()">
+            <div>
+              <span class="bg-alphagen-purple text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-1 inline-block">Task 1</span>
+              <h3 class="font-extrabold text-base text-alphagen-nearBlack">Find the Greatest Out of Three Numbers</h3>
+              <p class="text-xs text-alphagen-darkGrey mt-0.5">Write a lambda function taking 3 numbers and returning which one is the greatest.</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-trophy text-alphagen-purple text-2xl pr-2"></i>
+        </label>
+
+        <!-- Task 2 Card -->
+        <label class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-alphagen-purple transition">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="cc2-check w-6 h-6 accent-purple-600 cursor-pointer" onchange="updateCC2()">
+            <div>
+              <span class="bg-alphagen-yellowDark text-alphagen-nearBlack text-[11px] font-extrabold px-3 py-1 rounded-full uppercase mb-1 inline-block">Task 2</span>
+              <h3 class="font-extrabold text-base text-alphagen-nearBlack">Print Multiples of 8 (Up to 10 Times)</h3>
+              <p class="text-xs text-alphagen-darkGrey mt-0.5">Write a lambda function using a loop to print: <code>8, 16, 24, 32, 40, 48, 56, 64, 72, 80</code>.</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-list-ol text-alphagen-yellowDark text-2xl pr-2"></i>
+        </label>
+
+        <!-- Progress Status Banner -->
+        <div id="cc2-msg" class="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-center text-xs font-mono text-alphagen-yellow flex items-center justify-between">
+          <span>PROGRESS CHECKLIST:</span>
+          <span id="cc2-pill" class="text-alphagen-cyan font-bold">0 / 2 Tasks Completed</span>
+        </div>
+      </div>
+
+     
+    </div>
+
+    <!-- ================= SLIDE 11: WRAP-UP QUIZ & CELEBRATION ================= -->
+    <div id="slide-11" class="slide-panel bg-white justify-between">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-4 py-1.5 rounded-md border border-alphagen-purplePale">Mastery Check</span>
+        <h2 class="text-3xl font-extrabold text-alphagen-purple mt-2">Wrap-Up Quiz </h2>
+      </div>
+
+      <div class="space-y-3.5 my-auto">
+        <!-- Question 1 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-4 rounded-2xl flex items-center justify-between">
+          <div class="max-w-md">
+            <h4 class="font-extrabold text-sm text-alphagen-nearBlack">1. Does a Lambda Function have any name?</h4>
+            <p class="text-xs text-alphagen-darkGrey mt-0.5">By definition, how is it identified?</p>
+          </div>
+          <div class="flex gap-2.5">
+            <button onclick="checkFinalQ(this, false)" class="quiz-option text-xs px-5 py-2.5">Yes, it uses def</button>
+            <button onclick="checkFinalQ(this, true)" class="quiz-option text-xs px-5 py-2.5">No, it is Anonymous!</button>
+          </div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-4 rounded-2xl flex items-center justify-between">
+          <div class="max-w-md">
+            <h4 class="font-extrabold text-sm text-alphagen-nearBlack">2. Can a Lambda Function be used again once it is used?</h4>
+            <p class="text-xs text-alphagen-darkGrey mt-0.5">What is its primary design purpose?</p>
+          </div>
+          <div class="flex gap-2.5">
+            <button onclick="checkFinalQ(this, true)" class="quiz-option text-xs px-5 py-2.5">Designed as a quick throwaway function!</button>
+            <button onclick="checkFinalQ(this, false)" class="quiz-option text-xs px-5 py-2.5">Must be permanently stored in Python</button>
+          </div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-4 rounded-2xl flex items-center justify-between">
+          <div class="max-w-md">
+            <h4 class="font-extrabold text-sm text-alphagen-nearBlack">3. Does it take parameters and how is it called?</h4>
+            <p class="text-xs text-alphagen-darkGrey mt-0.5">How do we execute a lambda assigned to a variable?</p>
+          </div>
+          <div class="flex gap-2.5">
+            <button onclick="checkFinalQ(this, true)" class="quiz-option text-xs px-5 py-2.5">Yes! Called with variables holding it: f(args)</button>
+            <button onclick="checkFinalQ(this, false)" class="quiz-option text-xs px-5 py-2.5">No, it cannot accept parameters</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Celebrate Button -->
+      <div>
+        <button onclick="triggerGrandCelebration()" class="w-full bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack font-extrabold py-4 rounded-2xl text-base btn-interactive shadow-lg flex items-center justify-center gap-3">
+          <i class="fa-solid fa-trophy text-alphagen-purple text-xl"></i>
+          <span>Celebrate Mission Completion!</span>
+          <span>🎉</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Control Bar -->
+  <div class="nav-bar">
+    <button id="prev-btn" class="nav-btn btn-interactive" onclick="prevSlide()" disabled>
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Previous</span>
+    </button>
+
+    <span class="text-xs font-semibold text-white/90">
+      Use Arrow Keys (← / →) or buttons to navigate slides
+    </span>
+
+    <button id="next-btn" class="nav-btn btn-interactive" onclick="handleNextOrFinish()">
+      <span id="next-btn-text">Next</span>
+      <i id="next-btn-icon" class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+let currentSlide = 1;
+const totalSlides = 11;
+let soundEnabled = true;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+/* Web Audio Synthesizer */
+function playSound(type) {
+  if (!soundEnabled) return;
+  try {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+
+    if (type === 'correct') {
+      o.type = 'sine';
+      o.frequency.setValueAtTime(523, now);
+      o.frequency.exponentialRampToValueAtTime(659, now + 0.15);
+      g.gain.setValueAtTime(0.1, now);
+      g.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      o.start();
+      o.stop(now + 0.3);
+    } else if (type === 'wrong') {
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(180, now);
+      o.frequency.linearRampToValueAtTime(110, now + 0.2);
+      g.gain.setValueAtTime(0.1, now);
+      g.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+      o.start();
+      o.stop(now + 0.25);
+    } else {
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(360, now);
+      o.frequency.exponentialRampToValueAtTime(720, now + 0.08);
+      g.gain.setValueAtTime(0.1, now);
+      g.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      o.start();
+      o.stop(now + 0.08);
+    }
+  } catch (e) {}
+}
+
+function toggleAudio() {
+  soundEnabled = !soundEnabled;
+  const iconHtml = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+  const topAudioBtn = document.getElementById('top-audio-btn');
+  const stageAudioBtn = document.getElementById('audio-btn');
+  if (topAudioBtn) topAudioBtn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high text-base"></i>' : '<i class="fa-solid fa-volume-xmark text-base"></i>';
+  if (stageAudioBtn) stageAudioBtn.innerHTML = iconHtml;
+}
+
+/* Confetti Celebrations */
+function triggerSuccessConfetti() {
+  playSound('correct');
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 } });
+  }
+}
+
+function triggerGrandCelebration() {
+  playSound('correct');
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 140,
+      spread: 90,
+      origin: { y: 0.5 },
+      colors: ['#5E48C4', '#FFD071', '#4C97FF', '#ED5661', '#0FBD8C']
+    });
+    setTimeout(() => {
+      confetti({ particleCount: 90, angle: 60, spread: 55, origin: { x: 0 } });
+      confetti({ particleCount: 90, angle: 120, spread: 55, origin: { x: 1 } });
+    }, 250);
+  }
+}
+
+/* Navigation System */
+function initHeaderDots() {
+  const c = document.getElementById('header-dots-container');
+  if (!c) return;
+  c.innerHTML = '';
+  for (let i = 1; i <= totalSlides; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot-indicator ' + (i === 1 ? 'active' : '');
+    d.onclick = () => goToSlide(i);
+    c.appendChild(d);
+  }
+}
+
+function updateSlideDisplay() {
+  document.querySelectorAll('.slide-panel').forEach((p, i) => p.classList.toggle('active', i + 1 === currentSlide));
+  document.querySelectorAll('.dot-indicator').forEach((d, i) => d.classList.toggle('active', i + 1 === currentSlide));
+
+  const counterPill = document.getElementById('slide-counter-pill');
+  const dropdown = document.getElementById('slide-dropdown');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const nextBtnText = document.getElementById('next-btn-text');
+  const nextBtnIcon = document.getElementById('next-btn-icon');
+
+  if (counterPill) counterPill.innerText = `Slide ${currentSlide} / ${totalSlides}`;
+  if (dropdown) dropdown.value = currentSlide;
+  if (prevBtn) prevBtn.disabled = currentSlide === 1;
+
+  if (nextBtn && nextBtnText && nextBtnIcon) {
+    if (currentSlide === totalSlides) {
+      nextBtnText.innerText = 'Finish';
+      nextBtnIcon.className = 'fa-solid fa-flag-checkered';
+      nextBtn.classList.add('finish-btn');
+    } else {
+      nextBtnText.innerText = 'Next';
+      nextBtnIcon.className = 'fa-solid fa-arrow-right';
+      nextBtn.classList.remove('finish-btn');
+    }
+  }
+}
+
+function handleNextOrFinish() {
+  if (currentSlide === totalSlides) {
+    triggerGrandCelebration();
+  } else {
+    nextSlide();
+  }
+}
+
+function nextSlide() {
+  if (currentSlide < totalSlides) {
+    currentSlide++;
+    updateSlideDisplay();
+    playSound('pop');
+  }
+}
+
+function prevSlide() {
+  if (currentSlide > 1) {
+    currentSlide--;
+    updateSlideDisplay();
+    playSound('pop');
+  }
+}
+
+function goToSlide(n) {
+  if (n >= 1 && n <= totalSlides) {
+    currentSlide = n;
+    updateSlideDisplay();
+    playSound('pop');
+  }
+}
+
+function fitStageToScreen() {
+  const stage = document.querySelector('.slide-stage');
+  const nav = document.querySelector('.nav-bar');
+  if (!stage) return;
+  const availableWidth = window.innerWidth - 32;
+  if (availableWidth < 1280) {
+    const scale = availableWidth / 1280;
+    stage.style.transform = `scale(${scale})`;
+    stage.style.marginBottom = `-${720 * (1 - scale)}px`;
+    if (nav) nav.style.transform = `scale(${scale})`;
+  } else {
+    stage.style.transform = 'none';
+    stage.style.marginBottom = '0px';
+    if (nav) nav.style.transform = 'none';
+  }
+}
+
+/* SLIDE 2: WARM-UP RECAP */
+function checkWarmup(btn, isCorrect) {
+  const card = btn.closest('.bg-alphagen-purpleGhost');
+  const fb = card.querySelector('.warmup-fb');
+  card.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected-correct', 'selected-wrong'));
+
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    fb.innerText = '✅ Correct! Spot on!';
+    fb.className = 'warmup-fb p-2 rounded-xl text-xs font-bold text-center mt-2 block bg-emerald-100 text-emerald-800';
+    triggerSuccessConfetti();
+  } else {
+    btn.classList.add('selected-wrong');
+    fb.innerText = '❌ Review your functions basics and try again!';
+    fb.className = 'warmup-fb p-2 rounded-xl text-xs font-bold text-center mt-2 block bg-rose-100 text-rose-800';
+    playSound('wrong');
+  }
+}
+
+/* SLIDE 3: DISPOSABLE CUP ANALOGY */
+function pickDrinkingItem(item) {
+  const cardCup = document.getElementById('item-cup');
+  const cardPaper = document.getElementById('item-paper');
+  const followup = document.getElementById('followup-step');
+  const fb = document.getElementById('analogy-feedback');
+
+  if (item === 'cup') {
+    cardCup.className = 'bg-white border-2 border-emerald-500 rounded-2xl p-5 text-center cursor-pointer btn-interactive shadow-md';
+    cardPaper.className = 'bg-white border-2 border-alphagen-purplePale rounded-2xl p-5 text-center cursor-pointer btn-interactive opacity-50';
+    followup.classList.remove('hidden');
+    fb.innerHTML = '🥤 <strong>Awesome choice!</strong> The disposable cup holds water for your quick drink. Now answer step 2 above!';
+    playSound('correct');
+  } else {
+    cardPaper.className = 'bg-white border-2 border-rose-400 rounded-2xl p-5 text-center cursor-pointer btn-interactive';
+    fb.innerHTML = '❌ A flat sheet of paper cannot hold water while traveling! Pick the <strong>Disposable Cup</strong>!';
+    playSound('wrong');
+  }
+}
+
+function handleCupDecision(choice) {
+  const fb = document.getElementById('analogy-feedback');
+  if (choice === 'throw') {
+    fb.innerHTML = '🎉 <strong>Exactly! You throw it away!</strong> You don\'t carry a used disposable cup everywhere. That is how a <strong>Lambda Function</strong> works: used for a quick task, executed once, and discarded!';
+    fb.className = 'p-3 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 text-center mt-3';
+    triggerSuccessConfetti();
+  } else {
+    fb.innerHTML = '❌ Carrying a crushed disposable cup forever creates clutter! We throw it away after one use — just like Lambda functions!';
+    fb.className = 'p-3 bg-rose-50 border-2 border-rose-300 rounded-xl text-xs font-bold text-rose-900 text-center mt-3';
+    playSound('wrong');
+  }
+}
+
+/* SLIDE 6: NAME SIMULATOR */
+function setNamePreset(val) {
+  document.getElementById('sim-name-input').value = val;
+  updateNameSim();
+}
+
+function updateNameSim() {
+  const nameVal = document.getElementById('sim-name-input').value.trim() || 'Student';
+  document.getElementById('code-name-arg').innerText = `"${nameVal}"`;
+  document.getElementById('sim-name-terminal').innerText = `Hello, ${nameVal}`;
+  playSound('pop');
+}
+
+/* SLIDE 7: ADD TWO NUMBERS SIMULATOR */
+let addNumA = 8;
+let addNumB = 12;
+
+function adjustAddNum(which, delta) {
+  if (which === 1) addNumA = Math.max(1, addNumA + delta);
+  if (which === 2) addNumB = Math.max(1, addNumB + delta);
+
+  document.getElementById('add-val-1').innerText = addNumA;
+  document.getElementById('add-val-2').innerText = addNumB;
+  document.getElementById('code-add-a').innerText = addNumA;
+  document.getElementById('code-add-b').innerText = addNumB;
+  document.getElementById('add-terminal-out').innerText = `Calculated Sum: ${addNumA + addNumB}`;
+  playSound('pop');
+}
+
+function inspectAddToken(tok) {
+  playSound('pop');
+  const desc = document.getElementById('token-desc-box');
+  ['tok-var', 'tok-kw', 'tok-params', 'tok-expr'].forEach(id => {
+    document.getElementById(id).classList.remove('active-token');
+  });
+
+  if (tok === 'var') {
+    document.getElementById('tok-var').classList.add('active-token');
+    desc.innerHTML = '<strong>add (Variable):</strong> Holds the anonymous lambda function object so we can call it later as <code>add(a, b)</code>.';
+  } else if (tok === 'kw') {
+    document.getElementById('tok-kw').classList.add('active-token');
+    desc.innerHTML = '<strong>lambda (Keyword):</strong> Signals to Python that an inline anonymous function is being declared.';
+  } else if (tok === 'params') {
+    document.getElementById('tok-params').classList.add('active-token');
+    desc.innerHTML = '<strong>a, b (Parameters):</strong> Comma-separated variable names that receive incoming arguments.';
+  } else if (tok === 'expr') {
+    document.getElementById('tok-expr').classList.add('active-token');
+    desc.innerHTML = '<strong>a + b (Expression):</strong> The single operation computed. Its result is automatically returned without a return keyword!';
+  }
+}
+
+/* SLIDE 8: CODING CHALLENGE 1 */
+function updateCC1() {
+  playSound('pop');
+  const checks = document.querySelectorAll('.cc1-check');
+  const done = [...checks].filter(c => c.checked).length;
+  document.getElementById('cc1-pill').innerText = `${done} / ${checks.length} Tasks Completed`;
+
+  if (done === checks.length) {
+    document.getElementById('cc1-msg').innerHTML = '<span class="text-emerald-300 font-bold">🎉 Fantastic! Both coding tasks completed in Python!</span><span class="text-emerald-400 font-bold">2 / 2 Done</span>';
+    triggerSuccessConfetti();
+  }
+}
+
+/* SLIDE 9: CONDITION DEMO */
+function runCondDemo() {
+  playSound('pop');
+  const a = parseFloat(document.getElementById('cond-val-a').value) || 0;
+  const b = parseFloat(document.getElementById('cond-val-b').value) || 0;
+  const pill = document.getElementById('cond-result-pill');
+
+  if (a > b) {
+    pill.innerText = `Result: a is Greater! (${a} > ${b})`;
+    pill.className = 'p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold text-center';
+  } else if (b > a) {
+    pill.innerText = `Result: b is Greater! (${b} > ${a})`;
+    pill.className = 'p-3 bg-amber-100 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold text-center';
+  } else {
+    pill.innerText = `Result: Both values are Equal! (${a} == ${b})`;
+    pill.className = 'p-3 bg-purple-100 border border-purple-300 text-purple-900 rounded-xl text-xs font-bold text-center';
+  }
+}
+
+/* SLIDE 10: CODING CHALLENGE 2 */
+function updateCC2() {
+  playSound('pop');
+  const checks = document.querySelectorAll('.cc2-check');
+  const done = [...checks].filter(c => c.checked).length;
+  document.getElementById('cc2-pill').innerText = `${done} / ${checks.length} Tasks Completed`;
+
+  if (done === checks.length) {
+    document.getElementById('cc2-msg').innerHTML = '<span class="text-emerald-300 font-bold">🎉 Master Level! Both advanced lambda programs verified!</span><span class="text-emerald-400 font-bold">2 / 2 Done</span>';
+    triggerSuccessConfetti();
+  }
+}
+
+/* SLIDE 11: FINAL QUIZ */
+function checkFinalQ(btn, isCorrect) {
+  const row = btn.closest('.flex');
+  row.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected-correct', 'selected-wrong'));
+
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    playSound('correct');
+  } else {
+    btn.classList.add('selected-wrong');
+    playSound('wrong');
+  }
+}
+
+/* Global Listeners */
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') handleNextOrFinish();
+  if (e.key === 'ArrowLeft') prevSlide();
+});
+
+window.addEventListener('resize', fitStageToScreen);
+
+window.addEventListener('DOMContentLoaded', () => {
+  currentSlide = 1;
+  initHeaderDots();
+  updateSlideDisplay();
+  fitStageToScreen();
+});
+</script>
+</body>
+</html>
